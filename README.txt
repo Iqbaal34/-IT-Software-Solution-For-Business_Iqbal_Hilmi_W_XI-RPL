@@ -1,6 +1,9 @@
 Nama : Iqbal Hilmi Wibowo
 Kelas : XI RPL
 
+Admin = admin
+Admin = admin123
+
 Intruksi Penggunakan Projek CekStok Mobile App
 
 Syarat
