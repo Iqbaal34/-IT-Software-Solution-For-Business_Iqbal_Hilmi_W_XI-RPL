@@ -23,7 +23,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
           icon: Icon(Icons.inventory),
           label: "Inventory",
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Reports"),
+        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Transaction"),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Setting"),
       ],
       onTap: (index) {
@@ -31,7 +31,7 @@ class _NavbarWidgetState extends State<NavbarWidget> {
           RouteDestination.GoToHome(context, role: 'admin');
         }
         else if (index == 1) {
-          RouteDestination.GoToInventory(context);
+          RouteDestination.GoToInventory(context, role: 'admin');
         }
         else if(index == 2) {
           RouteDestination.GoToReport(context);

@@ -2,20 +2,75 @@ import 'package:flutter/material.dart';
 import 'package:inventaris_app/mysql_utils.dart';
 import 'package:inventaris_app/templates/navbarwidget.dart';
 import 'package:mysql1/mysql1.dart';
+import 'route_destination.dart';
 
 
-class PekerjaHome extends StatelessWidget {
+class PekerjaHome extends StatefulWidget {
   const PekerjaHome({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    selectAllProducts().then((results) {
-      for (var row in results) {
-        print('Product ID: ${row[0]}, Product name: ${row[1]} .....');
-      }
-    });
-    
+  State<PekerjaHome> createState() => _PekerjaHomeState();
+}
 
+class _PekerjaHomeState extends State<PekerjaHome> {
+  List<Map<String, dynamic>> products = [];
+  bool isLoading = true;
+  int lowStockCount = 0;
+  int highStockCount = 0;
+  final TextEditingController searchCtrl = TextEditingController();
+  List<Map<String, dynamic>> allProducts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProducts();
+  }
+
+  Future<void> fetchProducts() async {
+    final conn = await MysqlUtils.getConnection();
+    final result = await conn.query('SELECT * FROM products');
+
+    List<Map<String, dynamic>> fetched = [];
+    
+    for (var row in result) {
+      int stock = row['stok'];
+      if (stock < 15) lowStockCount++;
+      if (stock > 15) highStockCount++;
+
+      fetched.add({
+        'id': row['idproduk'],
+        'name': row['namaproduk'],
+        'category': row['kategori'],
+        'stock': row['stok'],
+        'price': row['harga'],
+        'image': row['image'],
+      });
+    }
+
+    setState(() {
+      products = fetched;
+      allProducts = fetched;
+      isLoading = false;
+    });
+
+
+    await conn.close();
+  }
+   void applyFilter() {
+  final query = searchCtrl.text.toLowerCase();
+  setState(() {
+    if (query.isNotEmpty) {
+      products = allProducts.where((p) {
+        return p['name'].toString().toLowerCase().contains(query);
+      }).toList();
+    } else {
+      products = allProducts;
+    }
+  });
+}
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
@@ -24,6 +79,7 @@ class PekerjaHome extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // --- Header
               Row(
                 children: [
                   const CircleAvatar(
@@ -31,27 +87,35 @@ class PekerjaHome extends StatelessWidget {
                     backgroundImage: NetworkImage('https://i.pravatar.cc/300'),
                   ),
                   const SizedBox(width: 12),
-                  Text(
+                  const Text(
                     'CekStok',
                     style: TextStyle(
                       color: Colors.blueAccent,
                       fontWeight: FontWeight.bold,
+                      fontSize: 18,
                     ),
                   ),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.notifications_none_rounded),
-                    onPressed: () {},
+                    onPressed: () {
+        
+                    },
                   ),
                   IconButton(
                     icon: const Icon(Icons.settings),
-                    onPressed: () {},
+                    onPressed: () {
+                      RouteDestination.GoToSetting(context);
+                    },
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
+              // --- Search Bar
               TextField(
+                controller: searchCtrl,
+                onChanged: (_) => applyFilter(),
                 decoration: InputDecoration(
                   hintText: "Search...",
                   prefixIcon: const Icon(Icons.search),
@@ -66,74 +130,66 @@ class PekerjaHome extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
+              // --- Statistik Cards
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildStatCard(
-                    "60",
-                    "Out of stock",
-                    Icons.inventory_2_rounded,
-                  ),
-                  _buildStatCard("360", "Low stock", Icons.trending_down),
-                  _buildStatCard("360", "Total Items", Icons.widgets),
+                  _buildStatCard(highStockCount.toString(), "High stock", Icons.trending_up),
+                  _buildStatCard(lowStockCount.toString(), "Low stock", Icons.trending_down),
+                  _buildStatCard(products.length.toString(), "Total Items", Icons.widgets),
                 ],
               ),
               const SizedBox(height: 20),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     "Recent Documents",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  Text("View All", style: TextStyle(color: Colors.blue)),
+                  GestureDetector(
+                    onTap:() {
+                      RouteDestination.GoToInventory(context, role: 'admin');
+                    },
+                    child: const Text(
+                      "View All",
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
 
+              // --- Daftar Produk dari Database
               Expanded(
-                child: ListView(
-                  children: [
-                    _buildRecentItem(
-                      "Coca Cola",
-                      "Silvia Thornton",
-                      "8:30 AM",
-                      "https://img.freepik.com/free-photo/cola-can_144627-19565.jpg",
-                      true,
-                    ),
-                    _buildRecentItem(
-                      "Doritos",
-                      "Laura Kennedy",
-                      "10:40 AM",
-                      "https://img.freepik.com/free-photo/crispy-potato-chips-white-bowl-isolated-white-background_1150-24720.jpg",
-                      false,
-                    ),
-                    _buildRecentItem(
-                      "Lass",
-                      "Carmen Dominguez",
-                      "12:45 PM",
-                      "https://img.freepik.com/free-photo/packaging-foil-bag-isolated_1101-110.jpg",
-                      true,
-                    ),
-                  ],
-                ),
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        itemCount: products.length,
+                        itemBuilder: (context, index) {
+                          final p = products[index];
+                          final int stock = p['stock'] ?? 0;
+                          final bool isUp = stock > 15;
+
+                          return _buildRecentItem(
+                            p['name'].toString(),
+                            p['category'].toString(),
+                            "Stok: $stock",
+                            p['image'].toString().isNotEmpty
+                                ? p['image'].toString()
+                                : 'https://via.placeholder.com/50',
+                            isUp,
+                          );
+                        },
+                      ),
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: NavbarWidget()
+      bottomNavigationBar: const NavbarWidget(),
     );
-  }
-
-  Future<Results> selectAllProducts() async {
-    final conn = await MysqlUtils.getConnection();
-    final result = await conn.query(
-      'SELECT id, name, price FROM products'
-    );
-    await conn.close();
-    return result;
   }
 
   Widget _buildStatCard(String value, String label, IconData icon) {
@@ -189,10 +245,7 @@ class PekerjaHome extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(user, style: const TextStyle(color: Colors.grey)),
               ],
             ),
@@ -206,10 +259,7 @@ class PekerjaHome extends StatelessWidget {
                 size: 20,
               ),
               const SizedBox(height: 4),
-              Text(
-                time,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+              Text(time, style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
         ],

@@ -5,6 +5,7 @@ import 'PekerjaHome.dart';
 
 class Loginpage extends StatefulWidget {
   const Loginpage({super.key});
+  
 
   @override
   State<Loginpage> createState() => _LoginpageState();
@@ -37,7 +38,7 @@ class _LoginpageState extends State<Loginpage> {
         if (role == 'admin') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const AdminHome()),
+            MaterialPageRoute(builder: (context) => const AdminHome(role: 'admin',)),
           );
         } else if (role == 'pekerja') {
           Navigator.pushReplacement(
@@ -62,82 +63,85 @@ class _LoginpageState extends State<Loginpage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+    
       backgroundColor: const Color(0xFFF5F5F5),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(25),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.inventory_2, size: 80, color: Colors.blueAccent),
-              const SizedBox(height: 20),
-              const Text(
-                'Selamat Datang 👋',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+               Image.asset(
+                'assets/images/login-page-banner.webp',
+                height: 250
               ),
-              const Text(
-                'Silakan login untuk melanjutkan',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.shade300,
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
+              const SizedBox(height: 100),
+              SizedBox(
+                width: double.infinity,
+                child: const Text(
+                  'Login',
+                  textAlign: TextAlign.start,
+                  style: TextStyle(fontSize: 30, fontFamily: 'Poppins', fontWeight: FontWeight.w600),
                 ),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: usernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        prefixIcon: Icon(Icons.person),
-                        border: OutlineInputBorder(),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: const Text(
+                  'Silakan login untuk melanjutkan',
+                  style: TextStyle(fontSize: 17, color: Colors.grey, fontFamily: 'Poppins', fontWeight: FontWeight.w400),
+                  textAlign: TextAlign.start,
+                ),
+              ),
+              const SizedBox(height: 40),
+              Column(
+                children: [
+                  TextField(
+                    controller: usernameController,
+                    decoration:  InputDecoration(
+                      labelText: 'Username', 
+
+                      prefixIcon: Icon(Icons.person),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: Icon(Icons.lock),
-                        border: OutlineInputBorder(),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      prefixIcon: Icon(Icons.lock),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: loginUser,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text('Login', style: TextStyle(fontSize: 16)),
-                      ),
-                    ),
-                    if (errorMessage.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text(
-                          errorMessage,
-                          style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: loginUser,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                  ],
-                ),
+                      child: const Text('Login', style: TextStyle(fontSize: 16, fontFamily: 'Poppins', fontWeight: FontWeight.w500,color: Colors.white)),
+                    ),
+                  ),
+                  if (errorMessage.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Text(
+                        errorMessage,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                ],
               ),
             ],
           ),

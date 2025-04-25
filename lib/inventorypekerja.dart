@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:inventaris_app/mysql_utils.dart';
 import 'package:inventaris_app/templates/navbarwidget.dart';
 import 'addproductpage.dart';
-import 'editproductpage.dart';
 
-class Inventory extends StatefulWidget {
-  const Inventory({super.key});
+class InventoryPekerja extends StatefulWidget {
+  const InventoryPekerja({super.key});
 
   @override
-  State<Inventory> createState() => _InventoryState();
+  State<InventoryPekerja> createState() => _InventoryPekerjaState();
 }
 
-class _InventoryState extends State<Inventory> {
+class _InventoryPekerjaState extends State<InventoryPekerja> {
   List<Map<String, dynamic>> products = [];
   List<Map<String, dynamic>> filteredProducts = [];
   bool isLoading = true;
@@ -43,7 +42,7 @@ class _InventoryState extends State<Inventory> {
 
     setState(() {
       products = fetched;
-      applyFilter(); // langsung filter saat selesai fetch
+      applyFilter();
       isLoading = false;
     });
   }
@@ -94,7 +93,7 @@ class _InventoryState extends State<Inventory> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text('Inventory', style: TextStyle(color: Colors.black)),
+        title: const Text('Inventory Produk', style: TextStyle(color: Colors.black)),
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton(
@@ -211,21 +210,6 @@ class _InventoryState extends State<Inventory> {
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => EditProduct(product: p),
-                                            ),
-                                          ).then((_) => fetchProducts());
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete, color: Colors.redAccent),
-                                        onPressed: () => deleteProduct(p['id']),
-                                      ),
                                     ],
                                   ),
                                 ],

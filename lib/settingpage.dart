@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:inventaris_app/analyticspage.dart';
 import 'package:inventaris_app/personalinfo.dart';
+import 'package:inventaris_app/route_destination.dart';
 import 'package:inventaris_app/templates/navbarwidget.dart';
 import 'package:inventaris_app/suppliermanage.dart';
 
 import 'accountmanagement.dart';
+import 'historypage.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
+  
 
   @override
   Widget build(BuildContext context) {
@@ -78,8 +82,18 @@ class SettingsPage extends StatelessWidget {
               ),
             );
           }),
-          _buildSettingTile(Icons.analytics, 'Analytics', () {}),
-          _buildSettingTile(Icons.notifications, 'Notifications', () {}),
+          _buildSettingTile(Icons.analytics, 'Analytics', () {
+            Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (context) => AnalyticsPage(),));
+          }),
+          _buildSettingTile(Icons.history_sharp, 'History', () {
+            Navigator.push(
+              context,
+             MaterialPageRoute(builder: (context) => const HistoryPage(),
+             )
+             );
+          }),
           const SizedBox(height: 20),
           const Text(
             'Others',
@@ -101,7 +115,7 @@ class SettingsPage extends StatelessWidget {
                         child: const Text('Logout'),
                         onPressed: () {
                           Navigator.pop(context);
-                          Navigator.pushReplacementNamed(context, '/login');
+                          RouteDestination.GoToLoginPage(context);
                         },
                       ),
                     ],

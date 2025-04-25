@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:inventaris_app/inventorypage.dart';
+import 'package:inventaris_app/inventoryadmin.dart';
+import 'package:inventaris_app/route_destination.dart';
+import 'package:inventaris_app/settingpage.dart';
+import 'inventorypekerja.dart';
 import 'mysql_utils.dart';
 import 'templates/navbarwidget.dart';
 
 class AdminHome extends StatefulWidget {
-  const AdminHome({super.key});
+  final String role; // TERIMA role
+  const AdminHome({super.key, required this.role});
 
   @override
   State<AdminHome> createState() => _AdminHomeState();
@@ -13,6 +17,10 @@ class AdminHome extends StatefulWidget {
 class _AdminHomeState extends State<AdminHome> {
   List<Map<String, dynamic>> products = [];
   bool isLoading = true;
+  int lowStockCount = 0;
+  int highStockCount = 0;
+  final TextEditingController searchCtrl = TextEditingController();
+  List<Map<String, dynamic>> allProducts = [];
 
   @override
   void initState() {
@@ -25,8 +33,12 @@ class _AdminHomeState extends State<AdminHome> {
     final result = await conn.query('SELECT * FROM products');
 
     List<Map<String, dynamic>> fetched = [];
-
+    
     for (var row in result) {
+      int stock = row['stok'];
+      if (stock < 15) lowStockCount++;
+      if (stock > 15) highStockCount++;
+
       fetched.add({
         'id': row['idproduk'],
         'name': row['namaproduk'],
@@ -39,10 +51,24 @@ class _AdminHomeState extends State<AdminHome> {
 
     setState(() {
       products = fetched;
+      allProducts = fetched;
       isLoading = false;
     });
 
     await conn.close();
+  }
+
+  void applyFilter() {
+    final query = searchCtrl.text.toLowerCase();
+    setState(() {
+      if (query.isNotEmpty) {
+        products = allProducts.where((p) {
+          return p['name'].toString().toLowerCase().contains(query);
+        }).toList();
+      } else {
+        products = allProducts;
+      }
+    });
   }
 
   @override
@@ -78,7 +104,9 @@ class _AdminHomeState extends State<AdminHome> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.settings),
-                    onPressed: () {},
+                    onPressed: () {
+                      RouteDestination.GoToSetting(context);
+                    },
                   ),
                 ],
               ),
@@ -86,6 +114,8 @@ class _AdminHomeState extends State<AdminHome> {
 
               // --- Search Bar
               TextField(
+                controller: searchCtrl,
+                onChanged: (_) => applyFilter(),
                 decoration: InputDecoration(
                   hintText: "Search...",
                   prefixIcon: const Icon(Icons.search),
@@ -104,8 +134,8 @@ class _AdminHomeState extends State<AdminHome> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildStatCard("60", "Products", Icons.inventory_2_rounded),
-                  _buildStatCard("360", "Low stock", Icons.trending_down),
+                  _buildStatCard(highStockCount.toString(), "High stock", Icons.trending_up),
+                  _buildStatCard(lowStockCount.toString(), "Low stock", Icons.trending_down),
                   _buildStatCard(products.length.toString(), "Total Items", Icons.widgets),
                 ],
               ),
@@ -119,8 +149,8 @@ class _AdminHomeState extends State<AdminHome> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   GestureDetector(
-                    onTap:() {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => Inventory()));
+                    onTap: () {
+                      RouteDestination.GoToInventory(context, role: widget.role); // pakai role dari widget
                     },
                     child: const Text(
                       "View All",
